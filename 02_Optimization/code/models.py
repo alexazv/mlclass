@@ -2,21 +2,34 @@
 
 import random
 import requests
+import operator
 import numpy as np
 import os
 
 results = {}
 
 
+def max_val_key():
+    #print(results)
+    global results
+    max_value = max(results, key=lambda k: results[k])
+    print(max_value)
+    return max_value
+
+
 def save_obj():
+    global results
     print("saving results")
     np.savez_compressed('results.npz', results)
 
 
 def load_obj():
-    if os.path.isfile('./file.txt'):
-        np.load('results.npz', results)
-    print("Found {0} results".format(len(results)))
+    global results
+    if os.path.isfile('results.npz'):
+        data = dict(np.load('results.npz'))['arr_0']
+        results = data[()]
+    print("loaded results")
+
 
 class Antenna:
 
@@ -37,9 +50,11 @@ class Antenna:
 
     def function(self):
 
-        if (self.phi[0], self.phi[1], self.phi[2], self.theta[0], self.theta[1], self.theta[2]) in results:
-            print('found saved results')
-            return results[(self.phi[0], self.phi[1], self.phi[2], self.theta[0], self.theta[1], self.theta[2])]
+        global results
+        saved_value = results.get((self.phi[0], self.phi[1], self.phi[2], self.theta[0], self.theta[1], self.theta[2]))
+        if saved_value is not None:
+            #print('found saved results')
+            return saved_value
 
         url = "https://aydanomachado.com/mlclass/02_Optimization.php" \
               "?dev_key=Alexandre%20Azevedo&phi1={0}& phi2={1}&phi3={2}&theta1={3}&theta2={4}&theta3={5}"\
